@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Descriptive Statistics Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light">
+  <div class="container py-4">
+    <h2 class="mb-4 text-center">Descriptive Statistics Dashboard</h2>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 text-center mb-4">
+      <div class="col-md-2"><div class="card p-3"><h6>Mean</h6><h4 id="mean">0</h4></div></div>
+      <div class="col-md-2"><div class="card p-3"><h6>Median</h6><h4 id="median">0</h4></div></div>
+      <div class="col-md-2"><div class="card p-3"><h6>Mode</h6><h4 id="mode">0</h4></div></div>
+      <div class="col-md-2"><div class="card p-3"><h6>Range</h6><h4 id="range">0</h4></div></div>
+      <div class="col-md-2"><div class="card p-3"><h6>Std. Dev.</h6><h4 id="stdDev">0</h4></div></div>
+      <div class="col-md-2"><div class="card p-3"><h6>Count</h6><h4 id="count">0</h4></div></div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card mb-4">
+      <div class="card-header">Sample Data (User Scores)</div>
+      <div class="card-body">
+        <table class="table table-striped">
+          <thead><tr><th>#</th><th>Score</th></tr></thead>
+          <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <canvas id="barChart"></canvas>
+      </div>
+      <div class="col-md-6">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    const scores = [75, 88, 92, 85, 91, 85, 90, 72, 84, 88, 85, 77, 95];
+
+    // Insert table rows
+    const tableBody = document.getElementById("dataTableBody");
+    scores.forEach((score, index) => {
+      tableBody.innerHTML += `<tr><td>${index + 1}</td><td>${score}</td></tr>`;
+    });
+
+    // Descriptive Statistics Calculations
+    const mean = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+    const median = (arr) => {
+      const sorted = [...arr].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    };
+    const mode = (arr) => {
+      const freq = {};
+      arr.forEach(num => freq[num] = (freq[num] || 0) + 1);
+      const maxFreq = Math.max(...Object.values(freq));
+      const modes = Object.keys(freq).filter(k => freq[k] == maxFreq);
+      return modes.join(', ');
+    };
+    const stdDev = (arr) => {
+      const m = mean(arr);
+      const variance = arr.reduce((acc, val) => acc + Math.pow(val - m, 2), 0) / arr.length;
+      return Math.sqrt(variance).toFixed(2);
+    };
+
+    // Populate cards
+    document.getElementById("mean").textContent = mean(scores).toFixed(2);
+    document.getElementById("median").textContent = median(scores);
+    document.getElementById("mode").textContent = mode(scores);
+    document.getElementById("range").textContent = Math.max(...scores) - Math.min(...scores);
+    document.getElementById("stdDev").textContent = stdDev(scores);
+    document.getElementById("count").textContent = scores.length;
+
+    // Charts
+    const labels = scores.map((_, i) => `User ${i + 1}`);
+    new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Scores',
+          data: scores,
+          backgroundColor: 'rgba(54, 162, 235, 0.6)'
+        }]
+      }
+    });
+
+    new Chart(document.getElementById('lineChart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Scores Over Time',
+          data: scores,
+          borderColor: 'rgba(255, 99, 132, 0.8)',
+          fill: false,
+          tension: 0.2
+        }]
+      }
+    });
+  </script>
+</body>
+</html>
