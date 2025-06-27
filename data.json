@@ -1,0 +1,41 @@
+{
+  "users": [
+    {
+      "id": "U001",
+      "name": "Alice",
+      "dateHired": "2023-01-15",
+      "characteristics": {
+        "Punctuality": 4.0,
+        "Communication": 3.5,
+        "Technical Knowledge": 4.5,
+        "Team Player": 4.0,
+        "Problem Solving": 4.0,
+        "Meeting Deadlines": 3.8
+      }
+    }
+  ],
+  "activity": [
+    { "userId": "U001", "week": "this", "day": "Sunday", "count": 2 },
+    { "userId": "U001", "week": "this", "day": "Monday", "count": 3 },
+    { "userId": "U001", "week": "this", "day": "Tuesday", "count": 1 },
+    { "userId": "U001", "week": "this", "day": "Wednesday", "count": 1 },
+    { "userId": "U001", "week": "this", "day": "Thursday", "count": 0 },
+    { "userId": "U001", "week": "this", "day": "Friday", "count": 1 },
+    { "userId": "U001", "week": "this", "day": "Saturday", "count": 1 },
+
+    { "userId": "U001", "week": "last", "day": "Sunday", "count": 1 },
+    { "userId": "U001", "week": "last", "day": "Monday", "count": 0 },
+    { "userId": "U001", "week": "last", "day": "Tuesday", "count": 1 },
+    { "userId": "U001", "week": "last", "day": "Wednesday", "count": 3 },
+    { "userId": "U001", "week": "last", "day": "Thursday", "count": 1 },
+    { "userId": "U001", "week": "last", "day": "Friday", "count": 0 },
+    { "userId": "U001", "week": "last", "day": "Saturday", "count": 1 }
+  ],
+  "functionUsage": [
+    { "userId": "U001", "function": "Login", "successCount": 20 },
+    { "userId": "U001", "function": "Upload Data", "successCount": 15 },
+    { "userId": "U001", "function": "Generate Report", "successCount": 8 },
+    { "userId": "U001", "function": "Export CSV", "successCount": 12 },
+    { "userId": "U001", "function": "Search Records", "successCount": 18 }
+  ]
+}
