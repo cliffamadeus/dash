@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Descriptive Statistics Dashboard</title>
+  <title>Player Profile Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Bootstrap 5 -->
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -16,45 +14,49 @@
       width: 80px;
       height: 80px;
       border-radius: 50%;
-      background-color: #ccc;
-      display: inline-block;
-      margin-right: 15px;
+      background-color: #6c757d;
+      margin-right: 1rem;
     }
-    .card-title {
-      font-size: 1.2rem;
+    .profile-card {
+      display: flex;
+      align-items: center;
+    }
+    .card h5 {
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body class="bg-light">
-  <div class="container py-4">
+  <div class="container my-5">
+    <div class="row g-4">
 
-    <!-- Profile Header -->
-    <div class="card mb-4 p-3 d-flex flex-row align-items-center">
-      <div class="avatar"></div>
-      <div>
-        <h5 class="mb-0">Alice</h5>
-        <small class="text-muted">Date Hired: 2023-01-15</small>
+      <!-- Left Column: Profile + Radar -->
+      <div class="col-md-6">
+        <div class="card mb-4 p-3">
+          <div class="profile-card mb-3">
+            <div class="avatar"></div>
+            <div>
+              <h4 id="userName">Username</h4>
+              <small id="userDate">Date Hired: </small>
+            </div>
+          </div>
+          <h5>Performance Characteristics</h5>
+          <canvas id="radarChart"></canvas>
+        </div>
       </div>
-    </div>
 
-    <!-- Weekly Activity Chart -->
-    <div class="card mb-4 p-3">
-      <h5 class="card-title">Weekly Activity (This Week vs Last Week)</h5>
-      <canvas id="weeklyActivityChart"></canvas>
-    </div>
+      <!-- Right Column: Weekly Activity + Function Usage -->
+      <div class="col-md-6">
+        <div class="card mb-4 p-3">
+          <h5>Weekly Activity (This Week vs Last Week)</h5>
+          <canvas id="weeklyActivityChart"></canvas>
 
-    <!-- Function Usage Chart -->
-    <div class="card mb-4 p-3">
-      <h5 class="card-title">Functions/Modules Successfully Used</h5>
-      <canvas id="functionUsageChart"></canvas>
-    </div>
+          <h5 class="mt-4">Functions Used Successfully</h5>
+          <canvas id="functionUsageChart"></canvas>
+        </div>
+      </div>
 
-    <!-- Radar Chart -->
-    <div class="card mb-4 p-3">
-      <h5 class="card-title">User Characteristics</h5>
-      <canvas id="radarChart"></canvas>
     </div>
-
   </div>
 
   <script>
@@ -63,11 +65,11 @@
       const data = await response.json();
 
       const selectedUserId = "U001";
-      const user = data.users.find((u) => u.id === selectedUserId);
+      const user = data.users.find(u => u.id === selectedUserId);
 
-      // Update profile header (if using dynamic DOM update)
-      document.querySelector(".card h5").textContent = user.name;
-      document.querySelector(".card small").textContent = `Date Hired: ${user.dateHired}`;
+      // Profile info
+      document.getElementById("userName").textContent = user.name;
+      document.getElementById("userDate").textContent = `Date Hired: ${user.dateHired}`;
 
       const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -80,7 +82,7 @@
       const countsLastWeek = getDailyCounts("last");
       const countsThisWeek = getDailyCounts("this");
 
-      // === Chart 1: Weekly Activity
+      // Weekly Activity Chart
       new Chart(document.getElementById('weeklyActivityChart'), {
         type: 'line',
         data: {
@@ -125,7 +127,7 @@
         }
       });
 
-      // === Chart 2: Function Usage
+      // Function Usage
       const functionData = data.functionUsage.filter(f => f.userId === selectedUserId);
       const functionLabels = functionData.map(f => f.function);
       const functionCounts = functionData.map(f => f.successCount);
@@ -135,7 +137,7 @@
         data: {
           labels: functionLabels,
           datasets: [{
-            label: 'Successful Uses',
+            label: 'Success Count',
             data: functionCounts,
             backgroundColor: 'rgba(255, 205, 86, 0.6)'
           }]
@@ -146,13 +148,16 @@
           scales: {
             x: {
               beginAtZero: true,
-              title: { display: true, text: 'Success Count' }
+              title: {
+                display: true,
+                text: 'Success Count'
+              }
             }
           }
         }
       });
 
-      // === Chart 3: Radar Chart for Characteristics
+      // Radar Chart
       const radarLabels = Object.keys(user.characteristics);
       const radarScores = Object.values(user.characteristics);
 
@@ -161,11 +166,11 @@
         data: {
           labels: radarLabels,
           datasets: [{
-            label: "Performance",
+            label: 'Performance',
             data: radarScores,
-            backgroundColor: "rgba(75, 192, 192, 0.2)",
-            borderColor: "rgba(75, 192, 192, 1)",
-            pointBackgroundColor: "rgba(75, 192, 192, 1)"
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            pointBackgroundColor: 'rgba(75, 192, 192, 1)'
           }]
         },
         options: {
@@ -184,6 +189,5 @@
 
     loadDataAndRenderCharts();
   </script>
-
 </body>
 </html>
