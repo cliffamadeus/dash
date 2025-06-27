@@ -2,116 +2,192 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Descriptive Statistics Dashboard</title>
+  <title>Player Profile Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-  <!-- Bootstrap CSS -->
+
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: #6c757d;
+      margin-right: 1rem;
+    }
+    .profile-card {
+      display: flex;
+      align-items: center;
+    }
+    .card h5 {
+      margin-top: 1rem;
+    }
+  </style>
 </head>
 <body class="bg-light">
-  <div class="container py-4">
-    <h2 class="mb-4 text-center">Descriptive Statistics Dashboard</h2>
+  <div class="container my-5">
+    <div class="row g-4">
 
-    <!-- Summary Cards -->
-    <div class="row g-4 text-center mb-4">
-      <div class="col-md-2"><div class="card p-3"><h6>Mean</h6><h4 id="mean">0</h4></div></div>
-      <div class="col-md-2"><div class="card p-3"><h6>Median</h6><h4 id="median">0</h4></div></div>
-      <div class="col-md-2"><div class="card p-3"><h6>Mode</h6><h4 id="mode">0</h4></div></div>
-      <div class="col-md-2"><div class="card p-3"><h6>Range</h6><h4 id="range">0</h4></div></div>
-      <div class="col-md-2"><div class="card p-3"><h6>Std. Dev.</h6><h4 id="stdDev">0</h4></div></div>
-      <div class="col-md-2"><div class="card p-3"><h6>Count</h6><h4 id="count">0</h4></div></div>
-    </div>
-
-    <!-- Data Table -->
-    <div class="card mb-4">
-      <div class="card-header">Sample Data (User Scores)</div>
-      <div class="card-body">
-        <table class="table table-striped">
-          <thead><tr><th>#</th><th>Score</th></tr></thead>
-          <tbody id="dataTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Charts -->
-    <div class="row mb-4">
+      <!-- Left Column: Profile + Radar -->
       <div class="col-md-6">
-        <canvas id="barChart"></canvas>
+        <div class="card mb-4 p-3">
+          <div class="profile-card mb-3">
+            <div class="avatar"></div>
+            <div>
+              <h4 id="userName">Username</h4>
+              <small id="userDate">Date Hired: </small>
+            </div>
+          </div>
+          <h5>Performance Characteristics</h5>
+          <canvas id="radarChart"></canvas>
+        </div>
       </div>
+
+      <!-- Right Column: Weekly Activity + Function Usage -->
       <div class="col-md-6">
-        <canvas id="lineChart"></canvas>
+        <div class="card mb-4 p-3">
+          <h5>Weekly Activity (This Week vs Last Week)</h5>
+          <canvas id="weeklyActivityChart"></canvas>
+
+          <h5 class="mt-4">Functions Used Successfully</h5>
+          <canvas id="functionUsageChart"></canvas>
+        </div>
       </div>
+
     </div>
   </div>
 
-  <!-- JavaScript Logic -->
   <script>
-    const scores = [75, 88, 92, 85, 91, 85, 90, 72, 84, 88, 85, 77, 95];
+    async function loadDataAndRenderCharts() {
+      const response = await fetch('data.json');
+      const data = await response.json();
 
-    // Insert table rows
-    const tableBody = document.getElementById("dataTableBody");
-    scores.forEach((score, index) => {
-      tableBody.innerHTML += `<tr><td>${index + 1}</td><td>${score}</td></tr>`;
-    });
+      const selectedUserId = "U001";
+      const user = data.users.find(u => u.id === selectedUserId);
 
-    // Descriptive Statistics Calculations
-    const mean = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
-    const median = (arr) => {
-      const sorted = [...arr].sort((a, b) => a - b);
-      const mid = Math.floor(sorted.length / 2);
-      return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-    };
-    const mode = (arr) => {
-      const freq = {};
-      arr.forEach(num => freq[num] = (freq[num] || 0) + 1);
-      const maxFreq = Math.max(...Object.values(freq));
-      const modes = Object.keys(freq).filter(k => freq[k] == maxFreq);
-      return modes.join(', ');
-    };
-    const stdDev = (arr) => {
-      const m = mean(arr);
-      const variance = arr.reduce((acc, val) => acc + Math.pow(val - m, 2), 0) / arr.length;
-      return Math.sqrt(variance).toFixed(2);
-    };
+      // Profile info
+      document.getElementById("userName").textContent = user.name;
+      document.getElementById("userDate").textContent = `Date Hired: ${user.dateHired}`;
 
-    // Populate cards
-    document.getElementById("mean").textContent = mean(scores).toFixed(2);
-    document.getElementById("median").textContent = median(scores);
-    document.getElementById("mode").textContent = mode(scores);
-    document.getElementById("range").textContent = Math.max(...scores) - Math.min(...scores);
-    document.getElementById("stdDev").textContent = stdDev(scores);
-    document.getElementById("count").textContent = scores.length;
+      const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-    // Charts
-    const labels = scores.map((_, i) => `User ${i + 1}`);
-    new Chart(document.getElementById('barChart'), {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Scores',
-          data: scores,
-          backgroundColor: 'rgba(54, 162, 235, 0.6)'
-        }]
-      }
-    });
+      const getDailyCounts = (week) =>
+        daysOfWeek.map(day => {
+          const entry = data.activity.find(a => a.userId === selectedUserId && a.week === week && a.day === day);
+          return entry ? entry.count : 0;
+        });
 
-    new Chart(document.getElementById('lineChart'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Scores Over Time',
-          data: scores,
-          borderColor: 'rgba(255, 99, 132, 0.8)',
-          fill: false,
-          tension: 0.2
-        }]
-      }
-    });
+      const countsLastWeek = getDailyCounts("last");
+      const countsThisWeek = getDailyCounts("this");
+
+      // Weekly Activity Chart
+      new Chart(document.getElementById('weeklyActivityChart'), {
+        type: 'line',
+        data: {
+          labels: daysOfWeek,
+          datasets: [
+            {
+              label: 'This Week',
+              data: countsThisWeek,
+              borderColor: 'rgba(54, 162, 235, 0.8)',
+              backgroundColor: 'rgba(54, 162, 235, 0.2)',
+              yAxisID: 'y1',
+              tension: 0.3
+            },
+            {
+              label: 'Last Week',
+              data: countsLastWeek,
+              borderColor: 'rgba(255, 99, 132, 0.8)',
+              backgroundColor: 'rgba(255, 99, 132, 0.2)',
+              yAxisID: 'y2',
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { title: { display: true, text: 'Day of the Week' } },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: { display: true, text: 'This Week' }
+            },
+            y2: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: { display: true, text: 'Last Week' },
+              grid: { drawOnChartArea: false }
+            }
+          }
+        }
+      });
+
+      // Function Usage
+      const functionData = data.functionUsage.filter(f => f.userId === selectedUserId);
+      const functionLabels = functionData.map(f => f.function);
+      const functionCounts = functionData.map(f => f.successCount);
+
+      new Chart(document.getElementById('functionUsageChart'), {
+        type: 'bar',
+        data: {
+          labels: functionLabels,
+          datasets: [{
+            label: 'Success Count',
+            data: functionCounts,
+            backgroundColor: 'rgba(255, 205, 86, 0.6)'
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          scales: {
+            x: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Success Count'
+              }
+            }
+          }
+        }
+      });
+
+      // Radar Chart
+      const radarLabels = Object.keys(user.characteristics);
+      const radarScores = Object.values(user.characteristics);
+
+      new Chart(document.getElementById('radarChart'), {
+        type: 'radar',
+        data: {
+          labels: radarLabels,
+          datasets: [{
+            label: 'Performance',
+            data: radarScores,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            pointBackgroundColor: 'rgba(75, 192, 192, 1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            r: {
+              beginAtZero: true,
+              min: 0,
+              max: 5,
+              ticks: { stepSize: 1 }
+            }
+          }
+        }
+      });
+    }
+
+    loadDataAndRenderCharts();
   </script>
 </body>
 </html>
