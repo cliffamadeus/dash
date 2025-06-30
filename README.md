@@ -1,3 +1,4 @@
+# Math31N Sample Dashboard
 ## 📊 Player Profile Dashboard
 
 This project displays a player-style profile dashboard using HTML, Bootstrap, and Chart.js. It visualizes:
